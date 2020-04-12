@@ -1,0 +1,29 @@
+[package]
+name = "eeprom25x"
+version = "0.1.0"
+authors = ["Alex M. <7845120+newAM@users.noreply.github.com>"]
+edition = "2018"
+repository = "https://github.com/newAM/eeprom25x-rs"
+license = "MIT"
+description = "Platform-agnostic Rust driver for the 25x series serial EEPROMs."
+readme = "README.md"
+keywords = ["eeprom", "i2c", "driver", "embedded-hal-driver"]
+categories = ["embedded", "hardware-support", "no-std"]
+homepage = "https://github.com/newAM/eeprom25x-rs"
+include = [
+    "**/*.rs",
+    "/Cargo.toml",
+    "/LICENSE",
+    "/README.md",
+]
+
+[dependencies]
+embedded-hal = "0.2"
+
+[dev-dependencies]
+ftdi-embedded-hal = { git = "https://github.com/geomatsi/ftdi-embedded-hal.git", rev = "a70ea3b5c18ed1c0542aac91d693c848c60a776f"}
+embedded-hal-mock = "0.7"
+
+[profile.release]
+lto = true
+
