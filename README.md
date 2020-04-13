@@ -1,5 +1,7 @@
 # Rust 25x EEPROM Driver
 
+[![Build Status](https://travis-ci.com/newAM/eeprom25x-rs.svg?branch=master)](https://travis-ci.com/newAM/eeprom25x-rs)
+
 Inspired by [eeprom24x-rs](https://github.com/eldruin/eeprom24x-rs),
 this is a driver for the 25x series SPI EEPROM,
 based on the [`embedded-hal`](https://github.com/rust-embedded/embedded-hal) traits.
