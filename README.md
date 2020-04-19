@@ -1,15 +1,19 @@
-# Rust 25x EEPROM Driver
+# Rust 25AA02E48 EEPROM Driver
 
-[![Build Status](https://travis-ci.com/newAM/eeprom25x-rs.svg?branch=master)](https://travis-ci.com/newAM/eeprom25x-rs)
+[![Build Status](https://travis-ci.com/newAM/eeprom25aa02e48-rs.svg?branch=master)](https://travis-ci.com/newAM/eeprom25aa02e48-rs)
 
-Inspired by [eeprom24x-rs](https://github.com/eldruin/eeprom24x-rs),
-this is a driver for the 25x series SPI EEPROM,
-based on the [`embedded-hal`](https://github.com/rust-embedded/embedded-hal) traits.
+Inspired by [eeprom24x-rs], this is a driver for the
+[Microchip 25AA02E48] SPI EEPROM, based on the [`embedded-hal`] traits.
+
+This EEPROM is unique because it has an EUI-48 MAC address programmed into the
+EEPROM, which makes it possible to produce embedded internet devices with
+valid MAC addresses.
 
 **Note:** This crate is still under active development!
 
-## Supported Devices
-At the moment this only supports the [25AA02E48](http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf) EEPROM.
+[eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
+[Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
+[`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 
 ## FTDI Example
 

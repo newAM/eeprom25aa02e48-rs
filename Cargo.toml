@@ -1,15 +1,15 @@
 [package]
-name = "eeprom25x"
+name = "eeprom25aa02e48"
 version = "0.1.1"
 authors = ["Alex M. <7845120+newAM@users.noreply.github.com>"]
 edition = "2018"
-repository = "https://github.com/newAM/eeprom25x-rs"
+repository = "https://github.com/newAM/eeprom25aa02e48-rs"
 license = "MIT"
-description = "Platform-agnostic Rust driver for the 25x series serial EEPROMs."
+description = "Platform-agnostic Rust driver for the 25AA02E48 EEPROM."
 readme = "README.md"
-keywords = ["eeprom", "i2c", "driver", "embedded-hal-driver"]
+keywords = ["eeprom", "i2c", "driver", "embedded-hal-driver", "25AA02E48", "microchip"]
 categories = ["embedded", "hardware-support", "no-std"]
-homepage = "https://github.com/newAM/eeprom25x-rs"
+homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
 include = [
     "**/*.rs",
     "/Cargo.toml",

@@ -1,12 +1,12 @@
-extern crate eeprom25x;
+extern crate eeprom25aa02e48;
 extern crate embedded_hal_mock as hal;
-use eeprom25x::{Eeprom25x, Error, INSTRUCTION_READ, INSTRUCTION_WRITE, PAGE_SIZE};
+use eeprom25aa02e48::{Eeprom25aa02e48, Error, INSTRUCTION_READ, INSTRUCTION_WRITE, PAGE_SIZE};
 use hal::pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction};
 use hal::spi::{Mock as SpiMock, Transaction as SpiTransaction};
 
 #[test]
 fn address_not_page_aligned() {
-    let mut eeprom = Eeprom25x::new(SpiMock::new(&[]), PinMock::new(&[]));
+    let mut eeprom = Eeprom25aa02e48::new(SpiMock::new(&[]), PinMock::new(&[]));
     let data: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
     match eeprom.write_page(7, data) {
         Err(Error::AddressNotPageAligned) => (),
@@ -21,7 +21,7 @@ fn write_page() {
     for i in 0..data.len() {
         data[i] = (PAGE_SIZE - i) as u8;
     }
-    let mut eeprom = Eeprom25x::new(
+    let mut eeprom = Eeprom25aa02e48::new(
         SpiMock::new(&[
             SpiTransaction::write(vec![INSTRUCTION_WRITE, address]),
             SpiTransaction::write(data.to_vec()),
@@ -39,7 +39,7 @@ fn write_page() {
 fn write_byte() {
     let address: u8 = 7;
     let data: u8 = 0xAF;
-    let mut eeprom = Eeprom25x::new(
+    let mut eeprom = Eeprom25aa02e48::new(
         SpiMock::new(&[SpiTransaction::write(vec![
             INSTRUCTION_WRITE,
             address,
@@ -56,7 +56,7 @@ fn write_byte() {
 
 #[test]
 fn address_invalid() {
-    let mut eeprom = Eeprom25x::new(SpiMock::new(&[]), PinMock::new(&[]));
+    let mut eeprom = Eeprom25aa02e48::new(SpiMock::new(&[]), PinMock::new(&[]));
     let mut data: [u8; 2] = [0; 2];
     match eeprom.read_data(0xFF, &mut data) {
         Err(Error::AddressInvalid) => (),
@@ -68,7 +68,7 @@ fn address_invalid() {
 fn read_data() {
     let address: u8 = 0xFF;
     let output: u8 = 0xAF;
-    let mut eeprom = Eeprom25x::new(
+    let mut eeprom = Eeprom25aa02e48::new(
         SpiMock::new(&[
             SpiTransaction::write(vec![INSTRUCTION_READ, address]),
             SpiTransaction::transfer(vec![0], vec![output]),

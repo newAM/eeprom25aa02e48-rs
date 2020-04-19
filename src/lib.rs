@@ -23,9 +23,9 @@ pub const PAGE_SIZE: usize = 16;
 /// Maximum EEPROM address.
 pub const MAX_ADDR: usize = 0xFF;
 
-/// Eeprom25x driver
+/// Eeprom25aa02e48 driver
 #[derive(Default)]
-pub struct Eeprom25x<SPI, CS> {
+pub struct Eeprom25aa02e48<SPI, CS> {
     /// SPI device.
     spi: SPI,
 
@@ -33,7 +33,7 @@ pub struct Eeprom25x<SPI, CS> {
     cs: CS,
 }
 
-/// Eeprom25x error type.
+/// Eeprom25aa02e48 error type.
 #[derive(Debug)]
 pub enum Error<SpiError, PinError> {
     /// SPI bus error wrapper.
@@ -46,15 +46,15 @@ pub enum Error<SpiError, PinError> {
     AddressInvalid,
 }
 
-impl<SPI, CS, SpiError, PinError> Eeprom25x<SPI, CS>
+impl<SPI, CS, SpiError, PinError> Eeprom25aa02e48<SPI, CS>
 where
     SPI: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
     CS: OutputPin<Error = PinError>,
 {
-    /// Creates a new `Eeprom25x` driver from a SPI peripheral and a chip
+    /// Creates a new `Eeprom25aa02e48` driver from a SPI peripheral and a chip
     /// select digital I/O pin.
     pub fn new(spi: SPI, cs: CS) -> Self {
-        Eeprom25x { spi: spi, cs: cs }
+        Eeprom25aa02e48 { spi: spi, cs: cs }
     }
 
     fn chip_enable(&mut self) -> Result<(), Error<SpiError, PinError>> {

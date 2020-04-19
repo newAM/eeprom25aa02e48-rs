@@ -1,8 +1,8 @@
-extern crate eeprom25x;
+extern crate eeprom25aa02e48;
 extern crate embedded_hal;
 extern crate ftdi_embedded_hal as hal;
 
-use eeprom25x::Eeprom25x;
+use eeprom25aa02e48::Eeprom25aa02e48;
 
 use crate::hal::x232h::FTx232H;
 
@@ -11,7 +11,7 @@ fn main() {
     let spi = dev.spi(hal::spi::SpiSpeed::CLK_1MHz).unwrap();
     let cs = dev.ph0().unwrap();
 
-    let mut eeprom = Eeprom25x::new(spi, cs);
+    let mut eeprom = Eeprom25aa02e48::new(spi, cs);
 
     let mut mac: [u8; 6] = [0; 6];
 
