@@ -6,8 +6,8 @@ Inspired by [eeprom24x-rs], this is a driver for the
 [Microchip 25AA02E48] SPI EEPROM, based on the [`embedded-hal`] traits.
 
 This EEPROM is unique because it has an EUI-48 MAC address programmed into the
-EEPROM, which makes it possible to produce embedded internet devices with
-valid MAC addresses.
+EEPROM, which is convient for creating internet connected devices valid MAC
+addresses.
 
 **Note:** This crate is still under active development!
 

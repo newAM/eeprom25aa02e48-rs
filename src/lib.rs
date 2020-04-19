@@ -1,4 +1,12 @@
-//! TODO, docstring
+//! Platform agnostic Rust driver for the [Microchip 25AA02E48] SPI EEPROM,
+//! based on the [`embedded-hal`] traits.
+//!
+//! This EEPROM is unique because it has an EUI-48 MAC address programmed into
+//! the EEPROM, which is convient for creating internet connected devices valid
+//! MAC addresses.
+//!
+//! [Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
+//! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
