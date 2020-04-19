@@ -1,6 +1,6 @@
 [package]
 name = "eeprom25aa02e48"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Alex M. <7845120+newAM@users.noreply.github.com>"]
 edition = "2018"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
@@ -21,7 +21,7 @@ include = [
 embedded-hal = "0.2"
 
 [dev-dependencies]
-ftdi-embedded-hal = { git = "https://github.com/geomatsi/ftdi-embedded-hal.git", rev = "a70ea3b5c18ed1c0542aac91d693c848c60a776f"}
+ftdi-embedded-hal = { git = "https://github.com/geomatsi/ftdi-embedded-hal.git", rev = "7b8b602d6c3a5820215b75e25525fcdecf6a96bb"}
 embedded-hal-mock = "0.7"
 
 [profile.release]
