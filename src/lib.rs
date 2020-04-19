@@ -12,7 +12,7 @@
 
 use embedded_hal as hal;
 
-use hal::blocking::spi;
+use hal::blocking;
 use hal::digital::v2::OutputPin;
 
 /// Read instruction.
@@ -60,11 +60,11 @@ pub enum Error<SpiError, PinError> {
 
 impl<SPI, CS, SpiError, PinError> Eeprom25aa02e48<SPI, CS>
 where
-    SPI: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
+    SPI: blocking::spi::Transfer<u8, Error = SpiError> + blocking::spi::Write<u8, Error = SpiError>,
     CS: OutputPin<Error = PinError>,
 {
-    /// Creates a new `Eeprom25aa02e48` driver from a SPI peripheral and a chip
-    /// select digital I/O pin.
+    /// Creates a new `Eeprom25aa02e48` driver from a SPI peripheral
+    /// and a chip select digital I/O pin.
     pub fn new(spi: SPI, cs: CS) -> Self {
         Eeprom25aa02e48 { spi: spi, cs: cs }
     }
