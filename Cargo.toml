@@ -1,6 +1,6 @@
 [package]
 name = "eeprom25aa02e48"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Alex M. <7845120+newAM@users.noreply.github.com>"]
 edition = "2018"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"

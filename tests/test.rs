@@ -1,6 +1,9 @@
 extern crate eeprom25aa02e48;
 extern crate embedded_hal_mock as hal;
-use eeprom25aa02e48::{Eeprom25aa02e48, Error, INSTRUCTION_READ, INSTRUCTION_WRITE, PAGE_SIZE};
+use eeprom25aa02e48::{
+    Eeprom25aa02e48, Error, EUI48_BYTES, EUI48_MEMORY_ADDRESS, INSTRUCTION_READ, INSTRUCTION_WRITE,
+    PAGE_SIZE,
+};
 use hal::pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction};
 use hal::spi::{Mock as SpiMock, Transaction as SpiTransaction};
 
@@ -81,4 +84,22 @@ fn read_data() {
     let mut data: [u8; 1] = [0; 1];
     eeprom.read_data(address, &mut data).unwrap();
     assert_eq!(data[0], output);
+}
+
+#[test]
+fn read_eui48() {
+    let dummy_mac: [u8; EUI48_BYTES] = [0xFF; EUI48_BYTES];
+    let mut eeprom = Eeprom25aa02e48::new(
+        SpiMock::new(&[
+            SpiTransaction::write(vec![INSTRUCTION_READ, EUI48_MEMORY_ADDRESS]),
+            SpiTransaction::transfer(vec![0; EUI48_BYTES], dummy_mac.to_vec()),
+        ]),
+        PinMock::new(&[
+            PinTransaction::set(PinState::Low),
+            PinTransaction::set(PinState::High),
+        ]),
+    );
+    let mut mac: [u8; EUI48_BYTES] = [0; EUI48_BYTES];
+    eeprom.read_eui48(&mut mac).unwrap();
+    assert_eq!(mac, dummy_mac);
 }

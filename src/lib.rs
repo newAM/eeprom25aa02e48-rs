@@ -18,6 +18,10 @@ const INSTRUCTION_RDSR: u8 = 0x05;
 const INSTRUCTION_WRSR: u8 = 0x01;
 */
 
+/// Number of bytes in an EUI48 MAC address.
+pub const EUI48_BYTES: usize = 6;
+/// EPPROM memory address of the EUI48 address.
+pub const EUI48_MEMORY_ADDRESS: u8 = 0xFA;
 /// EEPROM page size in bytes.
 pub const PAGE_SIZE: usize = 16;
 /// Maximum EEPROM address.
@@ -106,5 +110,13 @@ where
         self.spi.write(&cmd).map_err(Error::Spi)?;
         self.spi.write(&data).map_err(Error::Spi)?;
         self.chip_disable()
+    }
+
+    /// Read the EUI48 address from the EEPROM.
+    pub fn read_eui48(
+        &mut self,
+        eui48: &mut [u8; EUI48_BYTES],
+    ) -> Result<(), Error<SpiError, PinError>> {
+        self.read_data(EUI48_MEMORY_ADDRESS, eui48)
     }
 }

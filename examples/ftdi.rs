@@ -15,8 +15,7 @@ fn main() {
 
     let mut mac: [u8; 6] = [0; 6];
 
-    // 25AA02E48 EEPROM chips contain a MAC address at 0xFA
-    eeprom.read_data(0xFA, &mut mac).unwrap();
+    eeprom.read_eui48(&mut mac).unwrap();
 
     println!(
         "MAC address: {:X?}:{:X?}:{:X?}:{:X?}:{:X?}:{:X?}",
