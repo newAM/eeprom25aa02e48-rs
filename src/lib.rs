@@ -1,4 +1,4 @@
-//! TODO
+//! TODO, docstring
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
@@ -7,8 +7,10 @@ use embedded_hal as hal;
 use hal::blocking::spi;
 use hal::digital::v2::OutputPin;
 
-const INSTRUCTION_READ: u8 = 0x03;
-const INSTRUCTION_WRITE: u8 = 0x02;
+/// Read instruction.
+pub const INSTRUCTION_READ: u8 = 0x03;
+/// Write instruction.
+pub const INSTRUCTION_WRITE: u8 = 0x02;
 /*
 const INSTRUCTION_WRDI: u8 = 0x04;
 const INSTRUCTION_WREN: u8 = 0x06;
@@ -16,7 +18,10 @@ const INSTRUCTION_RDSR: u8 = 0x05;
 const INSTRUCTION_WRSR: u8 = 0x01;
 */
 
-const PAGE_SIZE: usize = 16;
+/// EEPROM page size in bytes.
+pub const PAGE_SIZE: usize = 16;
+/// Maximum EEPROM address.
+pub const MAX_ADDR: usize = 0xFF;
 
 /// Eeprom25x driver
 #[derive(Default)]
@@ -37,6 +42,8 @@ pub enum Error<SpiError, PinError> {
     Pin(PinError),
     /// Address is not page aligned.
     AddressNotPageAligned,
+    /// Address is invalid.
+    AddressInvalid,
 }
 
 impl<SPI, CS, SpiError, PinError> Eeprom25x<SPI, CS>
@@ -44,7 +51,7 @@ where
     SPI: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
     CS: OutputPin<Error = PinError>,
 {
-    /// Creates a new `eeprom25x` driver from a SPI peripheral and a chip
+    /// Creates a new `Eeprom25x` driver from a SPI peripheral and a chip
     /// select digital I/O pin.
     pub fn new(spi: SPI, cs: CS) -> Self {
         Eeprom25x { spi: spi, cs: cs }
@@ -65,6 +72,9 @@ where
         address: u8,
         data: &mut [u8],
     ) -> Result<(), Error<SpiError, PinError>> {
+        if address as usize + data.len() - 1 > MAX_ADDR {
+            return Err(Error::AddressInvalid);
+        }
         let cmd: [u8; 2] = [INSTRUCTION_READ, address];
         self.chip_enable()?;
         self.spi.write(&cmd).map_err(Error::Spi)?;
@@ -88,7 +98,7 @@ where
         address: u8,
         data: [u8; PAGE_SIZE],
     ) -> Result<(), Error<SpiError, PinError>> {
-        if address % 16 != 0 {
+        if address % PAGE_SIZE as u8 != 0 {
             return Err(Error::AddressNotPageAligned);
         }
         let cmd: [u8; 2] = [INSTRUCTION_WRITE, address];
