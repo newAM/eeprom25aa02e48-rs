@@ -21,9 +21,11 @@ include = [
 embedded-hal = "0.2"
 
 [dev-dependencies]
-ftdi-embedded-hal = { git = "https://github.com/geomatsi/ftdi-embedded-hal.git", rev = "7b8b602d6c3a5820215b75e25525fcdecf6a96bb"}
 embedded-hal-mock = "0.7"
+
+[dev-dependencies.ftdi-embedded-hal]
+git = "https://github.com/geomatsi/ftdi-embedded-hal.git"
+rev = "7b8b602d6c3a5820215b75e25525fcdecf6a96bb"
 
 [profile.release]
 lto = true
-
