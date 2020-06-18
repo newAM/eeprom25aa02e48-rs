@@ -84,17 +84,25 @@ where
         assert!(address as usize + data.len() - 1 <= MAX_ADDR);
         let cmd: [u8; 2] = [INSTRUCTION_READ, address];
         self.chip_enable()?;
-        self.spi.write(&cmd).map_err(Error::Spi)?;
-        self.spi.transfer(data).map_err(Error::Spi)?;
-        self.chip_disable()
+        if let Err(e) = self.spi.write(&cmd).map_err(Error::Spi) {
+            self.chip_disable()?;
+            return Err(e);
+        }
+        let result = self.spi.transfer(data).map_err(Error::Spi);
+        self.chip_disable()?;
+        match result {
+            Err(e) => Err(e),
+            _ => Ok(()),
+        }
     }
 
     /// Write a byte to the EEPROM.
     pub fn write_byte(&mut self, address: u8, data: u8) -> Result<(), Error<SpiError, PinError>> {
         let cmd: [u8; 3] = [INSTRUCTION_WRITE, address, data];
         self.chip_enable()?;
-        self.spi.write(&cmd).map_err(Error::Spi)?;
-        self.chip_disable()
+        let result = self.spi.write(&cmd).map_err(Error::Spi);
+        self.chip_disable()?;
+        result
     }
 
     /// Write a page to the EEPROM.
@@ -109,9 +117,13 @@ where
         assert!(address % PAGE_SIZE as u8 == 0);
         let cmd: [u8; 2] = [INSTRUCTION_WRITE, address];
         self.chip_enable()?;
-        self.spi.write(&cmd).map_err(Error::Spi)?;
-        self.spi.write(&data).map_err(Error::Spi)?;
-        self.chip_disable()
+        if let Err(e) = self.spi.write(&cmd).map_err(Error::Spi) {
+            self.chip_disable()?;
+            return Err(e);
+        }
+        let result = self.spi.write(&data).map_err(Error::Spi);
+        self.chip_disable()?;
+        result
     }
 
     /// Read the EUI48 address from the EEPROM.
