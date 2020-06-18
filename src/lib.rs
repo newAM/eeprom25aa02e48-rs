@@ -52,10 +52,6 @@ pub enum Error<SpiError, PinError> {
     Spi(SpiError),
     /// GPIO pin error wrapper.
     Pin(PinError),
-    /// Address is not page aligned.
-    AddressNotPageAligned,
-    /// Address is invalid.
-    AddressInvalid,
 }
 
 impl<SPI, CS, SpiError, PinError> Eeprom25aa02e48<SPI, CS>
@@ -84,9 +80,8 @@ where
         address: u8,
         data: &mut [u8],
     ) -> Result<(), Error<SpiError, PinError>> {
-        if address as usize + data.len() - 1 > MAX_ADDR {
-            return Err(Error::AddressInvalid);
-        }
+        // address is invalid
+        assert!(address as usize + data.len() - 1 <= MAX_ADDR);
         let cmd: [u8; 2] = [INSTRUCTION_READ, address];
         self.chip_enable()?;
         self.spi.write(&cmd).map_err(Error::Spi)?;
@@ -110,9 +105,8 @@ where
         address: u8,
         data: [u8; PAGE_SIZE],
     ) -> Result<(), Error<SpiError, PinError>> {
-        if address % PAGE_SIZE as u8 != 0 {
-            return Err(Error::AddressNotPageAligned);
-        }
+        // address is not page aligned
+        assert!(address % PAGE_SIZE as u8 == 0);
         let cmd: [u8; 2] = [INSTRUCTION_WRITE, address];
         self.chip_enable()?;
         self.spi.write(&cmd).map_err(Error::Spi)?;
