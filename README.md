@@ -1,37 +1,32 @@
-# Rust 25AA02E48 EEPROM Driver
-
+![Maintenance](https://img.shields.io/badge/maintenance-as--is-yellow.svg)
 [![Build Status](https://travis-ci.com/newAM/eeprom25aa02e48-rs.svg?branch=master)](https://travis-ci.com/newAM/eeprom25aa02e48-rs)
 
-Inspired by [eeprom24x-rs], this is a driver for the
-[Microchip 25AA02E48] SPI EEPROM, based on the [`embedded-hal`] traits.
+# eeprom25aa02e48
 
-This EEPROM is unique because it has an EUI-48 MAC address programmed into the
-EEPROM, which is convient for creating internet connected devices valid MAC
-addresses.
+Inspired by [eeprom24x-rs], this is a driver for the [Microchip 25AA02E48]
+SPI EEPROM, based on the [`embedded-hal`] traits.
 
-**Note:** This crate is still under active development!
+This EEPROM is unique because it has an EUI-48 MAC address programmed into
+the EEPROM, which is convient for creating internet connected devices valid
+MAC addresses.
 
-[eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
-[Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
-[`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
+### FTDI Example
 
-## FTDI Example
-
-### Building
 Instructions are provided for a Debian based OS.
 
 1. Run `sudo apt install libclang-dev libftdi1-dev`.
 2. Create a file `/etc/udev/rules.d/99-libftdi.rules`
 3. Put the following test into the file:
+
 ```
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="dialout", MODE="0660"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", GROUP="dialout", MODE="0660"
 ```
+
 4. Reload udev `sudo udevadm control --reload-rules && sudo udevadm trigger`.
 5. Build the binary `cargo build --example ftdi`.
 
-### Running
-Get a FT232H breakout board.  I used the [adafruit FT232H breakout](https://www.adafruit.com/product/2264).
+I used the [adafruit FT232H breakout], create the following connections.
 
 * Connect SCK to D0
 * Connect MOSI to D1
@@ -40,4 +35,9 @@ Get a FT232H breakout board.  I used the [adafruit FT232H breakout](https://www.
 * Connect Vdd to 3.3V or 5V
 * Connect Vss to GND
 
-Run the example `target/debug/examples/ftdi`.
+Run the example with `cargo run --example ftdi`.
+
+[adafruit FT232H breakout]: https://www.adafruit.com/product/2264
+[eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
+[Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
+[`embedded-hal`]: https://github.com/rust-embedded/embedded-hal

@@ -1,21 +1,15 @@
 [package]
 name = "eeprom25aa02e48"
-version = "0.3.1"
-authors = ["Alex M. <7845120+newAM@users.noreply.github.com>"]
+version = "0.4.0"
+authors = ["Alex M. <alexmgit@protonmail.com>"]
 edition = "2018"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
 license = "MIT"
 description = "Platform-agnostic Rust driver for the 25AA02E48 EEPROM."
 readme = "README.md"
-keywords = ["eeprom", "spi", "driver", "embedded-hal-driver", "25AA02E48", "microchip"]
+keywords = ["eeprom", "spi", "driver", "embedded-hal-driver", "microchip"]
 categories = ["embedded", "hardware-support", "no-std"]
 homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
-include = [
-    "**/*.rs",
-    "/Cargo.toml",
-    "/LICENSE",
-    "/README.md",
-]
 
 [dependencies]
 embedded-hal = "0.2"
@@ -29,3 +23,6 @@ rev = "7b8b602d6c3a5820215b75e25525fcdecf6a96bb"
 
 [profile.release]
 lto = true
+
+[badges]
+maintenance = { status = "as-is" }
