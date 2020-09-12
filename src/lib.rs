@@ -2,40 +2,32 @@
 //! SPI EEPROM, based on the [`embedded-hal`] traits.
 //!
 //! This EEPROM is unique because it has an EUI-48 MAC address programmed into
-//! the EEPROM, which is convient for creating internet connected devices valid
-//! MAC addresses.
+//! the EEPROM, which is convient for creating internet connected devices
+//! with valid MAC addresses.
 //!
-//! ## FTDI Example
+//! # FTDI Example
 //!
-//! Instructions are provided for a Debian based OS.
+//! The FTDI example uses an FTDI USB to SPI device to develop the drivers
+//! without the use of a microcontroller.
 //!
-//! 1. Run `sudo apt install libclang-dev libftdi1-dev`.
-//! 2. Create a file `/etc/udev/rules.d/99-libftdi.rules`
-//! 3. Put the following test into the file:
+//! One-time device setup instructions can be found in the [libftd2xx crate].
 //!
-//! ```text
-//! SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="dialout", MODE="0660"
-//! SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", GROUP="dialout", MODE="0660"
-//! ```
-//!
-//! 4. Reload udev `sudo udevadm control --reload-rules && sudo udevadm trigger`.
-//! 5. Build the binary `cargo build --example ftdi`.
-//!
-//! I used the [adafruit FT232H breakout], create the following connections.
+//! With the [adafruit FT232H breakout] create the following connections:
 //!
 //! * Connect SCK to D0
 //! * Connect MOSI to D1
 //! * Connect MISO to D2
-//! * Connect CS to C0
+//! * Connect CS to D3
 //! * Connect Vdd to 3.3V or 5V
 //! * Connect Vss to GND
 //!
-//! Run the example with `cargo run --example ftdi`.
+//! Then run example with `cargo run --example ftdi`.
 //!
+//! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 //! [adafruit FT232H breakout]: https://www.adafruit.com/product/2264
 //! [eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
+//! [libftd2xx crate]: https://github.com/newAM/libftd2xx-rs/
 //! [Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
-//! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
