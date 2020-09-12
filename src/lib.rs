@@ -7,7 +7,7 @@
 //!
 //! # FTDI Example
 //!
-//! The FTDI example uses an FTDI USB to SPI device to develop the drivers
+//! The FTDI example uses a FT232H USB to SPI device to develop the drivers
 //! without the use of a microcontroller.
 //!
 //! One-time device setup instructions can be found in the [libftd2xx crate].
@@ -21,13 +21,14 @@
 //! * Connect Vdd to 3.3V or 5V
 //! * Connect Vss to GND
 //!
-//! Then run example with `cargo run --example ftdi`.
+//! Run the example with `cargo run --example ftdi`.
 //!
 //! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 //! [adafruit FT232H breakout]: https://www.adafruit.com/product/2264
 //! [eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
 //! [libftd2xx crate]: https://github.com/newAM/libftd2xx-rs/
 //! [Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
+#![doc(html_root_url = "https://docs.rs/eeprom25aa02e48/0.1.0")]
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
@@ -81,8 +82,22 @@ where
 {
     /// Creates a new `Eeprom25aa02e48` driver from a SPI peripheral
     /// and a chip select digital I/O pin.
+    ///
+    /// # Example
+    ///
+    /// The `spi` and `pin` variables in this example will be provided by your
+    /// device-specific hal crate.
+    ///
+    /// ```
+    /// # use embedded_hal_mock as hal;
+    /// # let spi = hal::spi::Mock::new(&[]);
+    /// # let pin = hal::pin::Mock::new(&[]);
+    /// use eeprom25aa02e48::Eeprom25aa02e48;
+    ///
+    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// ```
     pub fn new(spi: SPI, cs: CS) -> Self {
-        Eeprom25aa02e48 { spi: spi, cs: cs }
+        Eeprom25aa02e48 { spi, cs }
     }
 
     fn chip_enable(&mut self) -> Result<(), Error<SpiError, PinError>> {
@@ -94,7 +109,23 @@ where
     }
 
     /// Read from the EEPROM.
+    ///
     /// The size of the `data` buffer determines the number of bytes read.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use embedded_hal_mock as hal;
+    /// # let spi = hal::spi::Mock::new(&[]);
+    /// # let pin = hal::pin::Mock::new(&[]);
+    /// use eeprom25aa02e48::Eeprom25aa02e48;
+    ///
+    /// let mut some_big_buf: [u8; 1024] = [0; 1024];
+    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// // read 64 bytes starting at EEPROM address 0x0
+    /// eeprom.read_data(0x0, &mut some_big_buf[..63])?;
+    /// # Ok::<(), eeprom25aa02e48::Error<embedded_hal_mock::MockError, embedded_hal_mock::MockError>>(())
+    /// ```
     pub fn read_data(
         &mut self,
         address: u8,
@@ -115,6 +146,22 @@ where
     }
 
     /// Write a byte to the EEPROM.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use embedded_hal_mock as hal;
+    /// # let spi = hal::spi::Mock::new(&[]);
+    /// # let pin = hal::pin::Mock::new(&[]);
+    /// use eeprom25aa02e48::Eeprom25aa02e48;
+    ///
+    /// const ADDRESS: u8 = 0x10;
+    /// const DATA: u8 = 0x42;
+    ///
+    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// eeprom.write_byte(ADDRESS, DATA)?;
+    /// # Ok::<(), eeprom25aa02e48::Error<embedded_hal_mock::MockError, embedded_hal_mock::MockError>>(())
+    /// ```
     pub fn write_byte(&mut self, address: u8, data: u8) -> Result<(), Error<SpiError, PinError>> {
         let cmd: [u8; 3] = [INSTRUCTION_WRITE, address, data];
         self.chip_enable()?;
@@ -125,11 +172,25 @@ where
 
     /// Write a page to the EEPROM.
     ///
-    /// *Note*: The address must be page aligned.
+    /// *Note:* The address must be page aligned.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use embedded_hal_mock as hal;
+    /// # let spi = hal::spi::Mock::new(&[]);
+    /// # let pin = hal::pin::Mock::new(&[]);
+    /// use eeprom25aa02e48::Eeprom25aa02e48;
+    ///
+    /// let data: [u8; 16] = [0x12; 16];
+    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// eeprom.write_page(0x0, &data)?;
+    /// # Ok::<(), eeprom25aa02e48::Error<embedded_hal_mock::MockError, embedded_hal_mock::MockError>>(())
+    /// ```
     pub fn write_page(
         &mut self,
         address: u8,
-        data: [u8; PAGE_SIZE],
+        data: &[u8; PAGE_SIZE],
     ) -> Result<(), Error<SpiError, PinError>> {
         // address not page aligned
         assert!(address % PAGE_SIZE as u8 == 0);
@@ -137,14 +198,28 @@ where
         self.chip_enable()?;
         let mut spi_functions = || -> Result<(), SpiError> {
             self.spi.write(&cmd)?;
-            self.spi.write(&data)
+            self.spi.write(data)
         };
         let result = spi_functions().map_err(Error::Spi);
         self.chip_disable()?;
         result
     }
 
-    /// Read the EUI48 address from the EEPROM.
+    /// Read the EUI48 MAC address from the EEPROM.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use embedded_hal_mock as hal;
+    /// # let spi = hal::spi::Mock::new(&[]);
+    /// # let pin = hal::pin::Mock::new(&[]);
+    /// use eeprom25aa02e48::Eeprom25aa02e48;
+    ///
+    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eui48: [u8; 6] = [0; 6];
+    /// eeprom.read_eui48(&mut eui48)?;
+    /// # Ok::<(), eeprom25aa02e48::Error<embedded_hal_mock::MockError, embedded_hal_mock::MockError>>(())
+    /// ```
     pub fn read_eui48(
         &mut self,
         eui48: &mut [u8; EUI48_BYTES],

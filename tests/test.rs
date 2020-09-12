@@ -1,9 +1,8 @@
-extern crate eeprom25aa02e48;
-extern crate embedded_hal_mock as hal;
 use eeprom25aa02e48::{
     Eeprom25aa02e48, EUI48_BYTES, EUI48_MEMORY_ADDRESS, INSTRUCTION_READ, INSTRUCTION_WRITE,
     PAGE_SIZE,
 };
+use embedded_hal_mock as hal;
 use hal::pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction};
 use hal::spi::{Mock as SpiMock, Transaction as SpiTransaction};
 
@@ -12,7 +11,7 @@ use hal::spi::{Mock as SpiMock, Transaction as SpiTransaction};
 fn address_not_page_aligned() {
     let mut eeprom = Eeprom25aa02e48::new(SpiMock::new(&[]), PinMock::new(&[]));
     let data: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
-    eeprom.write_page(7, data).unwrap();
+    eeprom.write_page(7, &data).unwrap();
 }
 
 #[test]
@@ -33,7 +32,7 @@ fn write_page() {
         ]),
     );
 
-    eeprom.write_page(address, data).unwrap();
+    eeprom.write_page(address, &data).unwrap();
 }
 
 #[test]

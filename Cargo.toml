@@ -1,6 +1,6 @@
 [package]
 name = "eeprom25aa02e48"
-version = "0.4.0"
+version = "0.1.0"
 authors = ["Alex M. <alexmgit@protonmail.com>"]
 edition = "2018"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
@@ -17,9 +17,7 @@ embedded-hal = "0.2"
 [dev-dependencies]
 embedded-hal-mock = "0.7"
 ftd2xx-embedded-hal = "0.1.0"
-
-[profile.release]
-lto = true
+version-sync = "0.9.1"
 
 [badges]
 maintenance = { status = "as-is" }

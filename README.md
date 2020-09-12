@@ -1,5 +1,7 @@
 ![Maintenance](https://img.shields.io/badge/maintenance-as--is-yellow.svg)
-[![Build Status](https://travis-ci.com/newAM/eeprom25aa02e48-rs.svg?branch=master)](https://travis-ci.com/newAM/eeprom25aa02e48-rs)
+[![crates.io](https://img.shields.io/crates/v/eeprom25aa02e48.svg)](https://crates.io/crates/eeprom25aa02e48)
+[![docs.rs](https://docs.rs/eeprom25aa02e48/badge.svg)](https://docs.rs/eeprom25aa02e48/)
+[![Build Status](https://github.com/newAM/eeprom25aa02e48-rs/workflows/CI/badge.svg)](https://github.com/newAM/eeprom25aa02e48-rs/actions)
 
 # eeprom25aa02e48
 
@@ -12,7 +14,7 @@ with valid MAC addresses.
 
 ## FTDI Example
 
-The FTDI example uses an FTDI USB to SPI device to develop the drivers
+The FTDI example uses a FT232H USB to SPI device to develop the drivers
 without the use of a microcontroller.
 
 One-time device setup instructions can be found in the [libftd2xx crate].
@@ -26,7 +28,7 @@ With the [adafruit FT232H breakout] create the following connections:
 * Connect Vdd to 3.3V or 5V
 * Connect Vss to GND
 
-Then run example with `cargo run --example ftdi`.
+Run the example with `cargo run --example ftdi`.
 
 [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 [adafruit FT232H breakout]: https://www.adafruit.com/product/2264
