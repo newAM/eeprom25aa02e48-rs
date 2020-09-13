@@ -172,7 +172,7 @@ where
 
     /// Write a page to the EEPROM.
     ///
-    /// *Note:* The address must be page aligned.
+    /// **Note:** The address must be page aligned.
     ///
     /// # Example
     ///
