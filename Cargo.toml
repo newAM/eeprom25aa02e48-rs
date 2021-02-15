@@ -12,12 +12,12 @@ categories = ["embedded", "hardware-support", "no-std"]
 homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
 
 [dependencies]
-embedded-hal = "0.2"
+embedded-hal = "~0.2"
 
 [dev-dependencies]
-embedded-hal-mock = "0.7"
-ftd2xx-embedded-hal = "0.1.0"
-version-sync = "0.9.1"
+embedded-hal-mock = "~0.7"
+ftd2xx-embedded-hal = "~0.3"
+version-sync = "~0.9"
 
 [badges]
 maintenance = { status = "as-is" }
