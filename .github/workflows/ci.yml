@@ -3,17 +3,44 @@ on: [push, pull_request]
 name: CI
 
 jobs:
-  build_and_test:
-    name: Rust project
+  build:
+    name: Compile Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - "x86_64-unknown-linux-gnu"
+          - "thumbv6m-none-eabi"
+          - "thumbv7em-none-eabi"
+          - "thumbv7em-none-eabihf"
+          - "thumbv7m-none-eabi"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      - run: RUSTFLAGS="-D warnings" cargo build --target ${{ matrix.target }}
+
+  test:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - run: RUSTFLAGS="-D warnings" cargo build --verbose
-      - run: cargo test --verbose
-      - run: cargo doc --verbose
+      - run: RUSTFLAGS="-D warnings" cargo test
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: RUSTFLAGS="-D warnings" cargo doc
 
   clippy_check:
     name: Clippy
@@ -43,7 +70,7 @@ jobs:
   release:
     name: crates.io release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build_and_test, clippy_check, format_check]
+    needs: [clippy_check, format_check, build, test, docs]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
