@@ -5,10 +5,31 @@
 //! the EEPROM, which is convient for creating internet connected devices
 //! with valid MAC addresses.
 //!
+//! # Example
+//!
+//! ```
+//! # use eeprom25aa02e48::{instruction, EUI48_MEMORY_ADDRESS};
+//! # use embedded_hal_mock as hal;
+//! # let spi = hal::spi::Mock::new(&[
+//! #   hal::spi::Transaction::write(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
+//! #   hal::spi::Transaction::transfer(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
+//! # ]);
+//! # let pin = hal::pin::Mock::new(&[
+//! #    hal::pin::Transaction::set(hal::pin::State::Low),
+//! #    hal::pin::Transaction::set(hal::pin::State::High),
+//! # ]);
+//! use eeprom25aa02e48::Eeprom25aa02e48;
+//!
+//! let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+//! let eui48: [u8; 6] = eeprom.read_eui48()?;
+//! # assert_eq!(eui48, [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]);
+//! # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+//! ```
+//!
 //! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 //! [eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
 //! [Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
-#![doc(html_root_url = "https://docs.rs/eeprom25aa02e48/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/eeprom25aa02e48/0.2.0")]
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
