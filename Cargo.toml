@@ -16,7 +16,7 @@ embedded-hal = "~0.2"
 
 [dev-dependencies]
 embedded-hal-mock = "~0.7"
-ftd2xx-embedded-hal = "~0.4"
+ftd2xx-embedded-hal = "~0.5"
 version-sync = "~0.9"
 
 [badges]
