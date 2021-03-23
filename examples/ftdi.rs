@@ -24,7 +24,10 @@ use embedded_hal::spi::Polarity;
 use ftd2xx_embedded_hal::Ft232hHal;
 
 fn main() {
-    let dev = Ft232hHal::new().unwrap();
+    let dev = Ft232hHal::new()
+        .expect("Failed to open FT232H")
+        .init_default()
+        .expect("Failed to initialize MPSSE");
     let mut spi = dev.spi().unwrap();
     spi.set_clock_polarity(Polarity::IdleLow);
     let cs = dev.ad3();
