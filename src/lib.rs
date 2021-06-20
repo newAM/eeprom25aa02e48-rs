@@ -2,7 +2,7 @@
 //! SPI EEPROM, based on the [`embedded-hal`] traits.
 //!
 //! This EEPROM is unique because it has an EUI-48 MAC address programmed into
-//! the EEPROM, which is convient for creating internet connected devices
+//! the EEPROM, which is convenient for creating internet connected devices
 //! with valid MAC addresses.
 //!
 //! # Example
