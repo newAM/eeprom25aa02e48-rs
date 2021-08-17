@@ -15,7 +15,7 @@ homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
 embedded-hal = "~0.2"
 
 [dev-dependencies]
-embedded-hal-mock = "~0.7"
+embedded-hal-mock = "~0.8"
 ftd2xx-embedded-hal = "~0.9.0"
 version-sync = "~0.9"
 
