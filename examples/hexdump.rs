@@ -4,7 +4,8 @@
 
 use eeprom25aa02e48::Eeprom25aa02e48;
 use embedded_hal::spi::Polarity;
-use ftd2xx_embedded_hal::Ft232hHal;
+use ftdi_embedded_hal::{FtHal, OutputPin, Spi};
+use libftd2xx::Ft232h;
 
 fn hexdump(buf: &[u8]) {
     let width: usize = format!("{:X}", buf.len())
@@ -38,13 +39,12 @@ fn hexdump(buf: &[u8]) {
 }
 
 fn main() {
-    let dev = Ft232hHal::new()
-        .expect("Failed to open FT232H")
-        .init_default()
-        .expect("Failed to initialize MPSSE");
-    let mut spi = dev.spi().unwrap();
+    let device: Ft232h = libftd2xx::Ftdi::new().unwrap().try_into().unwrap();
+    let hal_dev: FtHal<Ft232h> = FtHal::init_default(device).unwrap();
+
+    let mut spi: Spi<Ft232h> = hal_dev.spi().unwrap();
     spi.set_clock_polarity(Polarity::IdleLow);
-    let cs = dev.ad3();
+    let cs: OutputPin<Ft232h> = hal_dev.ad3().unwrap();
 
     let mut eeprom = Eeprom25aa02e48::new(spi, cs);
 
