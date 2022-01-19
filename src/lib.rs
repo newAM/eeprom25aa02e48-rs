@@ -29,8 +29,8 @@
 //! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 //! [eeprom24x-rs]: https://github.com/eldruin/eeprom24x-rs
 //! [Microchip 25AA02E48]: http://ww1.microchip.com/downloads/en/DeviceDoc/25AA02E48-25AA02E64-2K-SPI-Bus-Serial-EEPROM-Data%20Sheet_DS20002123G.pdf
-#![doc(html_root_url = "https://docs.rs/eeprom25aa02e48/0.2.0")]
-#![deny(missing_docs, unsafe_code)]
+#![forbid(unsafe_code)]
+#![warn(missing_docs)]
 #![no_std]
 
 use embedded_hal as hal;
