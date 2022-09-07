@@ -4,8 +4,10 @@
 
 use eeprom25aa02e48::Eeprom25aa02e48;
 use embedded_hal::spi::Polarity;
-use ftdi_embedded_hal::{FtHal, OutputPin, Spi};
-use libftd2xx::Ft232h;
+use ftdi_embedded_hal::{
+    libftd2xx::{self, Ft232h},
+    FtHal, OutputPin, Spi,
+};
 
 fn hexdump(buf: &[u8]) {
     let width: usize = format!("{:X}", buf.len())
