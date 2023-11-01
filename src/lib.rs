@@ -9,7 +9,7 @@
 //!
 //! ```
 //! # use eeprom25aa02e48::{instruction, EUI48_MEMORY_ADDRESS};
-//! # use embedded_hal_mock as hal;
+//! # use embedded_hal_mock::eh0 as hal;
 //! # let spi = hal::spi::Mock::new(&[
 //! #   hal::spi::Transaction::write(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
 //! #   hal::spi::Transaction::transfer(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
@@ -23,6 +23,7 @@
 //! let mut eeprom = Eeprom25aa02e48::new(spi, pin);
 //! let eui48: [u8; 6] = eeprom.read_eui48()?;
 //! # assert_eq!(eui48, [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]);
+//! # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
 //! # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
 //! ```
 //!
@@ -96,7 +97,7 @@ where
     /// device-specific hal crate.
     ///
     /// ```
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let mut pin = hal::pin::Mock::new(&[
     /// #    hal::pin::Transaction::set(hal::pin::State::High),
@@ -106,6 +107,7 @@ where
     ///
     /// pin.set_high()?;
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), hal::MockError>(())
     /// ```
     pub fn new(spi: SPI, cs: CS) -> Self {
@@ -117,13 +119,14 @@ where
     /// # Example
     ///
     /// ```
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
-    /// let (spi, pin) = eeprom.free();
+    /// let (mut spi, mut pin) = eeprom.free();
+    /// # spi.done(); pin.done();
     /// ```
     pub fn free(self) -> (SPI, CS) {
         (self.spi, self.cs)
@@ -170,7 +173,7 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::instruction;
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[
     /// #   hal::spi::Transaction::write(vec![instruction::READ, 0x00]),
     /// #   hal::spi::Transaction::transfer(vec![0x00; 64], vec![0x00; 64]),
@@ -185,6 +188,7 @@ where
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// // read 64 bytes starting at EEPROM address 0x00
     /// eeprom.read(0x00, &mut some_big_buf[..64])?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
     ///
@@ -198,7 +202,7 @@ where
     /// The length of the buf may not exceed 256.
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
@@ -206,6 +210,7 @@ where
     /// let mut some_big_buf: [u8; 1024] = [0; 1024];
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// eeprom.read(0x0, &mut some_big_buf)?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
     pub fn read(&mut self, address: u8, buf: &mut [u8]) -> Result<(), Error<SpiError, PinError>> {
@@ -236,7 +241,7 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::instruction;
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[
     /// #   hal::spi::Transaction::write(vec![instruction::WREN]),
     /// #   hal::spi::Transaction::write(vec![instruction::WRITE, 0x10]),
@@ -253,6 +258,7 @@ where
     /// let data: [u8; 16] = [0x12; 16];
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// eeprom.write_page(0x10, &data)?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
     ///
@@ -261,7 +267,7 @@ where
     /// The data length must be less than or equal to the page size (16).
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
@@ -269,13 +275,14 @@ where
     /// let data: [u8; 17] = [0x00; 17];
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// eeprom.write_page(0, &data)?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
     ///
     /// The address must be page aligned.
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
@@ -283,6 +290,7 @@ where
     /// let data: [u8; 16] = [0x00; 16];
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// eeprom.write_page(1, &data)?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
     pub fn write_page(
@@ -310,7 +318,7 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::{instruction, EUI48_MEMORY_ADDRESS};
-    /// # use embedded_hal_mock as hal;
+    /// # use embedded_hal_mock::eh0 as hal;
     /// # let spi = hal::spi::Mock::new(&[
     /// #   hal::spi::Transaction::write(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
     /// #   hal::spi::Transaction::transfer(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
@@ -323,6 +331,7 @@ where
     ///
     /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
     /// let eui48: [u8; 6] = eeprom.read_eui48()?;
+    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
     /// # assert_eq!(eui48, [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]);
     /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
     /// ```
