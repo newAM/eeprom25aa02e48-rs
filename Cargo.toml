@@ -15,8 +15,8 @@ homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
 embedded-hal = "0.2"
 
 [dev-dependencies]
-embedded-hal-mock = "0.10.0-rc.1"
-ftdi-embedded-hal = { version = "0.19", features = ["libftd2xx"] }
+embedded-hal-mock = "0.10.0-rc.4"
+ftdi-embedded-hal = { version = "0.20", features = ["libftd2xx"] }
 
 [badges]
 maintenance = { status = "as-is" }
