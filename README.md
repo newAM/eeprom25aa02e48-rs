@@ -16,7 +16,7 @@ with valid MAC addresses.
 ```rust
 use eeprom25aa02e48::Eeprom25aa02e48;
 
-let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+let mut eeprom = Eeprom25aa02e48::new(spi);
 let eui48: [u8; 6] = eeprom.read_eui48()?;
 ```
 

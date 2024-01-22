@@ -1,6 +1,6 @@
 [package]
 name = "eeprom25aa02e48"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Alex Martens <alex@thinglab.org>"]
 edition = "2021"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
