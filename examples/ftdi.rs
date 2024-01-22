@@ -23,18 +23,17 @@ use eeprom25aa02e48::Eeprom25aa02e48;
 use embedded_hal::spi::Polarity;
 use ftdi_embedded_hal::{
     libftd2xx::{self, Ft232h},
-    FtHal, OutputPin, Spi,
+    FtHal, SpiDevice,
 };
 
 fn main() {
     let device: Ft232h = libftd2xx::Ftdi::new().unwrap().try_into().unwrap();
     let hal_dev: FtHal<Ft232h> = FtHal::init_default(device).unwrap();
 
-    let mut spi: Spi<Ft232h> = hal_dev.spi().unwrap();
+    let mut spi: SpiDevice<Ft232h> = hal_dev.spi_device(3).unwrap();
     spi.set_clock_polarity(Polarity::IdleLow);
-    let cs: OutputPin<Ft232h> = hal_dev.ad3().unwrap();
 
-    let mut eeprom = Eeprom25aa02e48::new(spi, cs);
+    let mut eeprom = Eeprom25aa02e48::new(&spi);
     let mac: [u8; 6] = eeprom.read_eui48().unwrap();
 
     println!(

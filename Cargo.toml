@@ -1,6 +1,6 @@
 [package]
 name = "eeprom25aa02e48"
-version = "0.2.0"
+version = "1.0.0"
 authors = ["Alex Martens <alex@thinglab.org>"]
 edition = "2021"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
@@ -12,8 +12,8 @@ categories = ["embedded", "hardware-support", "no-std"]
 homepage = "https://github.com/newAM/eeprom25aa02e48-rs"
 
 [dependencies]
-embedded-hal = "0.2"
+embedded-hal = "1"
 
 [dev-dependencies]
-embedded-hal-mock = "0.10.0-rc.4"
+embedded-hal-mock = "0.10"
 ftdi-embedded-hal = { version = "0.21", features = ["libftd2xx"] }
