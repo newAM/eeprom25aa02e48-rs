@@ -9,22 +9,20 @@
 //!
 //! ```
 //! # use eeprom25aa02e48::{instruction, EUI48_MEMORY_ADDRESS};
-//! # use embedded_hal_mock::eh0 as hal;
+//! # use embedded_hal_mock::eh1 as hal;
 //! # let spi = hal::spi::Mock::new(&[
-//! #   hal::spi::Transaction::write(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
-//! #   hal::spi::Transaction::transfer(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
-//! # ]);
-//! # let pin = hal::pin::Mock::new(&[
-//! #    hal::pin::Transaction::set(hal::pin::State::Low),
-//! #    hal::pin::Transaction::set(hal::pin::State::High),
+//! #   hal::spi::Transaction::transaction_start(),
+//! #   hal::spi::Transaction::write_vec(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
+//! #   hal::spi::Transaction::transfer_in_place(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
+//! #   hal::spi::Transaction::transaction_end(),
 //! # ]);
 //! use eeprom25aa02e48::Eeprom25aa02e48;
 //!
-//! let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+//! let mut eeprom = Eeprom25aa02e48::new(spi);
 //! let eui48: [u8; 6] = eeprom.read_eui48()?;
 //! # assert_eq!(eui48, [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]);
-//! # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-//! # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+//! # let mut spi = eeprom.free(); spi.done();
+//! # Ok::<(), embedded_hal::spi::ErrorKind>(())
 //! ```
 //!
 //! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
@@ -34,10 +32,7 @@
 #![warn(missing_docs)]
 #![no_std]
 
-use embedded_hal as hal;
-
-use hal::blocking;
-use hal::digital::v2::OutputPin;
+use embedded_hal::spi::Operation;
 
 /// EEPROM instructions.
 pub mod instruction {
@@ -64,99 +59,60 @@ pub const PAGE_SIZE: u8 = 16;
 
 /// Microchip 25AA02E48 driver.
 #[derive(Default)]
-pub struct Eeprom25aa02e48<SPI, CS> {
-    /// SPI device.
+pub struct Eeprom25aa02e48<SPI> {
     spi: SPI,
-    /// GPIO for chip select.
-    cs: CS,
 }
 
-/// Error type.
-#[derive(Debug)]
-pub enum Error<SpiError, PinError> {
-    /// SPI bus error wrapper.
-    Spi(SpiError),
-    /// GPIO pin error wrapper.
-    Pin(PinError),
-}
-
-impl<SPI, CS, SpiError, PinError> Eeprom25aa02e48<SPI, CS>
+impl<SPI> Eeprom25aa02e48<SPI>
 where
-    SPI: blocking::spi::Transfer<u8, Error = SpiError> + blocking::spi::Write<u8, Error = SpiError>,
-    CS: OutputPin<Error = PinError>,
+    SPI: embedded_hal::spi::SpiDevice,
 {
-    /// Creates a new driver from a SPI bus and a chip select digital I/O pin.
-    ///
-    /// # Safety
-    ///
-    /// The chip select pin must be high before being passed to this function.
+    /// Creates a new driver from a SPI bus.
     ///
     /// # Example
     ///
-    /// The `spi` and `pin` variables in this example will be provided by your
+    /// The `spi` variables in this example will be provided by your
     /// device-specific hal crate.
     ///
     /// ```
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
-    /// # let mut pin = hal::pin::Mock::new(&[
-    /// #    hal::pin::Transaction::set(hal::pin::State::High),
-    /// # ]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
-    /// use embedded_hal::digital::v2::OutputPin;
     ///
-    /// pin.set_high()?;
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), hal::MockError>(())
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
+    /// # let mut spi = eeprom.free(); spi.done();
     /// ```
-    pub fn new(spi: SPI, cs: CS) -> Self {
-        Eeprom25aa02e48 { spi, cs }
+    #[inline]
+    pub fn new(spi: SPI) -> Self {
+        Eeprom25aa02e48 { spi }
     }
 
-    /// Free the SPI bus and CS pin from the W5500.
+    /// Free the SPI bus from the device.
     ///
     /// # Example
     ///
     /// ```
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
-    /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
-    /// let (mut spi, mut pin) = eeprom.free();
-    /// # spi.done(); pin.done();
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
+    /// let mut spi = eeprom.free();
+    /// # spi.done();
     /// ```
-    pub fn free(self) -> (SPI, CS) {
-        (self.spi, self.cs)
-    }
-
-    /// Context manager to ensure CS is always set high after an operation.
-    #[inline(always)]
-    fn with_chip_enable<T, E, F>(&mut self, mut f: F) -> Result<T, E>
-    where
-        F: FnMut(&mut SPI) -> Result<T, E>,
-        E: core::convert::From<Error<SpiError, PinError>>,
-    {
-        self.cs.set_low().map_err(Error::Pin)?;
-        let result = f(&mut self.spi);
-        self.cs.set_high().map_err(Error::Pin)?;
-        result
+    #[inline]
+    pub fn free(self) -> SPI {
+        self.spi
     }
 
     /// Context manager to ensure the write latch is always disabled after an operation.
     #[inline(always)]
-    fn with_write_latch<T, E, F>(&mut self, f: F) -> Result<T, E>
-    where
-        F: FnMut(&mut SPI) -> Result<T, E>,
-        E: core::convert::From<Error<SpiError, PinError>>,
-    {
-        self.with_chip_enable(|spi| spi.write(&[instruction::WREN]).map_err(Error::Spi))?;
-        let result = self.with_chip_enable(f);
+    fn with_write_latch(&mut self, operations: &mut [Operation<'_, u8>]) -> Result<(), SPI::Error> {
+        self.spi.write(&[instruction::WREN])?;
+        let result = self.spi.transaction(operations);
         // write latch automatically resets on successful write
         if result.is_err() {
-            self.with_chip_enable(|spi| spi.write(&[instruction::WRDI]).map_err(Error::Spi))?;
+            self.spi.write(&[instruction::WRDI])?;
         }
         result
     }
@@ -173,23 +129,21 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::instruction;
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[
-    /// #   hal::spi::Transaction::write(vec![instruction::READ, 0x00]),
-    /// #   hal::spi::Transaction::transfer(vec![0x00; 64], vec![0x00; 64]),
-    /// # ]);
-    /// # let pin = hal::pin::Mock::new(&[
-    /// #    hal::pin::Transaction::set(hal::pin::State::Low),
-    /// #    hal::pin::Transaction::set(hal::pin::State::High),
+    /// #   hal::spi::Transaction::transaction_start(),
+    /// #   hal::spi::Transaction::write_vec(vec![instruction::READ, 0x00]),
+    /// #   hal::spi::Transaction::transfer_in_place(vec![0x00; 64], vec![0x00; 64]),
+    /// #   hal::spi::Transaction::transaction_end(),
     /// # ]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let mut some_big_buf: [u8; 1024] = [0; 1024];
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// // read 64 bytes starting at EEPROM address 0x00
     /// eeprom.read(0x00, &mut some_big_buf[..64])?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # let mut spi = eeprom.free(); spi.done();
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
     ///
     /// # Safety
@@ -202,29 +156,25 @@ where
     /// The length of the buf may not exceed 256.
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
-    /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let mut some_big_buf: [u8; 1024] = [0; 1024];
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// eeprom.read(0x0, &mut some_big_buf)?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # let mut spi = eeprom.free(); spi.done();
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
-    pub fn read(&mut self, address: u8, buf: &mut [u8]) -> Result<(), Error<SpiError, PinError>> {
+    pub fn read(&mut self, address: u8, buf: &mut [u8]) -> Result<(), SPI::Error> {
         if buf.is_empty() {
             Ok(())
         } else {
             // buffer is too large
             assert!(buf.len() <= 256);
             let cmd: [u8; 2] = [instruction::READ, address];
-            self.with_chip_enable(|spi| {
-                spi.write(&cmd).map_err(Error::Spi)?;
-                spi.transfer(buf).map_err(Error::Spi)?;
-                Ok(())
-            })
+            self.spi
+                .transaction(&mut [Operation::Write(&cmd), Operation::TransferInPlace(buf)])
         }
     }
 
@@ -241,25 +191,23 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::instruction;
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[
-    /// #   hal::spi::Transaction::write(vec![instruction::WREN]),
-    /// #   hal::spi::Transaction::write(vec![instruction::WRITE, 0x10]),
-    /// #   hal::spi::Transaction::write(vec![0x12; 16]),
-    /// # ]);
-    /// # let pin = hal::pin::Mock::new(&[
-    /// #    hal::pin::Transaction::set(hal::pin::State::Low),
-    /// #    hal::pin::Transaction::set(hal::pin::State::High),
-    /// #    hal::pin::Transaction::set(hal::pin::State::Low),
-    /// #    hal::pin::Transaction::set(hal::pin::State::High),
+    /// #   hal::spi::Transaction::transaction_start(),
+    /// #   hal::spi::Transaction::write_vec(vec![instruction::WREN]),
+    /// #   hal::spi::Transaction::transaction_end(),
+    /// #   hal::spi::Transaction::transaction_start(),
+    /// #   hal::spi::Transaction::write_vec(vec![instruction::WRITE, 0x10]),
+    /// #   hal::spi::Transaction::write_vec(vec![0x12; 16]),
+    /// #   hal::spi::Transaction::transaction_end(),
     /// # ]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let data: [u8; 16] = [0x12; 16];
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// eeprom.write_page(0x10, &data)?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # let mut spi = eeprom.free(); spi.done();
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
     ///
     /// # Panics
@@ -267,48 +215,40 @@ where
     /// The data length must be less than or equal to the page size (16).
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let data: [u8; 17] = [0x00; 17];
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// eeprom.write_page(0, &data)?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # let mut spi = eeprom.free(); spi.done();
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
     ///
     /// The address must be page aligned.
     ///
     /// ```should_panic
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
     /// # let pin = hal::pin::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let data: [u8; 16] = [0x00; 16];
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// eeprom.write_page(1, &data)?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # let mut spi = eeprom.free(); spi.done();
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
-    pub fn write_page(
-        &mut self,
-        address: u8,
-        data: &[u8],
-    ) -> Result<(), Error<SpiError, PinError>> {
+    pub fn write_page(&mut self, address: u8, data: &[u8]) -> Result<(), SPI::Error> {
         assert!(address % PAGE_SIZE == 0);
         if data.is_empty() {
             Ok(())
         } else {
             assert!(data.len() <= PAGE_SIZE as usize);
             let cmd: [u8; 2] = [instruction::WRITE, address];
-            self.with_write_latch(|spi| {
-                spi.write(&cmd).map_err(Error::Spi)?;
-                spi.write(data).map_err(Error::Spi)?;
-                Ok(())
-            })
+            self.with_write_latch(&mut [Operation::Write(&cmd), Operation::Write(data)])
         }
     }
 
@@ -318,24 +258,22 @@ where
     ///
     /// ```
     /// # use eeprom25aa02e48::{instruction, EUI48_MEMORY_ADDRESS};
-    /// # use embedded_hal_mock::eh0 as hal;
+    /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[
-    /// #   hal::spi::Transaction::write(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
-    /// #   hal::spi::Transaction::transfer(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
-    /// # ]);
-    /// # let pin = hal::pin::Mock::new(&[
-    /// #    hal::pin::Transaction::set(hal::pin::State::Low),
-    /// #    hal::pin::Transaction::set(hal::pin::State::High),
+    /// #   hal::spi::Transaction::transaction_start(),
+    /// #   hal::spi::Transaction::write_vec(vec![instruction::READ, EUI48_MEMORY_ADDRESS]),
+    /// #   hal::spi::Transaction::transfer_in_place(vec![0; 6], vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]),
+    /// #   hal::spi::Transaction::transaction_end(),
     /// # ]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
-    /// let mut eeprom = Eeprom25aa02e48::new(spi, pin);
+    /// let mut eeprom = Eeprom25aa02e48::new(spi);
     /// let eui48: [u8; 6] = eeprom.read_eui48()?;
-    /// # let (mut spi, mut cs) = eeprom.free(); spi.done(); cs.done();
+    /// # let mut spi = eeprom.free(); spi.done();
     /// # assert_eq!(eui48, [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]);
-    /// # Ok::<(), eeprom25aa02e48::Error<_, _>>(())
+    /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
-    pub fn read_eui48(&mut self) -> Result<[u8; EUI48_BYTES], Error<SpiError, PinError>> {
+    pub fn read_eui48(&mut self) -> Result<[u8; EUI48_BYTES], SPI::Error> {
         let mut eui48: [u8; EUI48_BYTES] = [0; EUI48_BYTES];
         self.read(EUI48_MEMORY_ADDRESS, &mut eui48)?;
         Ok(eui48)
