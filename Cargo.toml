@@ -16,4 +16,4 @@ embedded-hal = "1"
 
 [dev-dependencies]
 embedded-hal-mock = "0.10"
-ftdi-embedded-hal = { version = "0.21", features = ["libftd2xx"] }
+ftdi-embedded-hal = { version = "0.22", features = ["libftd2xx"] }
