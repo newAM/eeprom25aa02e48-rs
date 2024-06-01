@@ -217,7 +217,7 @@ where
     /// ```should_panic
     /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
-    /// # let pin = hal::pin::Mock::new(&[]);
+    /// # let pin = hal::digital::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let data: [u8; 17] = [0x00; 17];
@@ -232,7 +232,7 @@ where
     /// ```should_panic
     /// # use embedded_hal_mock::eh1 as hal;
     /// # let spi = hal::spi::Mock::new(&[]);
-    /// # let pin = hal::pin::Mock::new(&[]);
+    /// # let pin = hal::digital::Mock::new(&[]);
     /// use eeprom25aa02e48::Eeprom25aa02e48;
     ///
     /// let data: [u8; 16] = [0x00; 16];
