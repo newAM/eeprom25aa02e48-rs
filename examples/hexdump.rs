@@ -47,7 +47,7 @@ fn main() {
     let mut spi: SpiDevice<Ft232h> = hal_dev.spi_device(3).unwrap();
     spi.set_clock_polarity(Polarity::IdleLow);
 
-    let mut eeprom = Eeprom25aa02e48::new(&spi);
+    let mut eeprom = Eeprom25aa02e48::new(spi);
 
     let mut all_data: [u8; 256] = [0; 256];
     eeprom

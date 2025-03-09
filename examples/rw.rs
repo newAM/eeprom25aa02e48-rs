@@ -16,7 +16,7 @@ fn main() {
     let mut spi: SpiDevice<Ft232h> = hal_dev.spi_device(3).unwrap();
     spi.set_clock_polarity(Polarity::IdleLow);
 
-    let mut eeprom = Eeprom25aa02e48::new(&spi);
+    let mut eeprom = Eeprom25aa02e48::new(spi);
 
     let mut page: [u8; PAGE_SIZE as usize] = [0; PAGE_SIZE as usize];
     const BYTE_ADDR: u8 = 0x10;
