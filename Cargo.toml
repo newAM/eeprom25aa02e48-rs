@@ -2,7 +2,7 @@
 name = "eeprom25aa02e48"
 version = "1.0.1"
 authors = ["Alex Martens <alex@thinglab.org>"]
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/newAM/eeprom25aa02e48-rs"
 license = "MIT"
 description = "Platform-agnostic Rust driver for the 25AA02E48 EEPROM."
