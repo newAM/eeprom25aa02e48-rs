@@ -5,8 +5,8 @@
 use eeprom25aa02e48::{Eeprom25aa02e48, PAGE_SIZE};
 use embedded_hal::spi::Polarity;
 use ftdi_embedded_hal::{
-    libftd2xx::{self, Ft232h},
     FtHal, SpiDevice,
+    libftd2xx::{self, Ft232h},
 };
 
 fn main() {
