@@ -242,7 +242,7 @@ where
     /// # Ok::<(), embedded_hal::spi::ErrorKind>(())
     /// ```
     pub fn write_page(&mut self, address: u8, data: &[u8]) -> Result<(), SPI::Error> {
-        assert!(address % PAGE_SIZE == 0);
+        assert!(address.is_multiple_of(PAGE_SIZE));
         if data.is_empty() {
             Ok(())
         } else {
